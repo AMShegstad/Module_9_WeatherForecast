@@ -1,0 +1,20 @@
+{
+  "cities": [
+    {
+      "name": "Tampa",
+      "id": "4565135572"
+    },
+    {
+      "name": "Minneapolis",
+      "id": "4929496493"
+    },
+    {
+      "name": "Sacramento",
+      "id": "9566382349"
+    },
+    {
+      "name": "Hong Kong",
+      "id": "5879062063"
+    }
+  ]
+}
