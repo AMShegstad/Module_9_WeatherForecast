@@ -31,23 +31,30 @@ const fetchWeather = async (cityName) => {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cityName }),
+        body: JSON.stringify( {cityName} ),
     });
-    console.log(cityName);
+    //DEBUGGING -> console.log(cityName);
     const weatherArray = await response.json();
-    //console.log('weatherData: ', weatherData);
+    //DEBUGGING -> console.log('weatherData from main.js->fetchWeather(): ', weatherArray);
     renderCurrentWeather(weatherArray[0]);
     renderForecast(weatherArray.slice(1));
 };
 
 const fetchSearchHistory = async () => {
-    const history = await fetch('/api/weather/history', {
+    const response = await fetch('/api/weather/history', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         },
     });
-    console.log(history);
+    //DEBUGGING -> console.log('request for search history sent from main.js -> fetchSearchHistory()');
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    } else {
+        console.log('History Retrieved');
+    }
+    const history = await response.json();
+    //DEBUGGING -> console.log('history returned from fetchSearchHistory() -> history.cities: ', history.cities);
     return history;
 };
 
@@ -113,17 +120,19 @@ const renderForecastCard = (forecast) => {
 };
 
 const renderSearchHistory = async (searchHistory) => {
-    const historyList = await searchHistory.json();
-    console.log(historyList);
+    const historyList = await searchHistory;//await searchHistory.json();
+    console.log('main.js -> renderSearchHistory()', historyList.cities);
     if (searchHistoryContainer) {
         searchHistoryContainer.innerHTML = '';
-        if (!historyList.length) {
+        if (!historyList.cities.length) {
             searchHistoryContainer.innerHTML =
                 '<p class="text-center">No Previous Search History</p>';
         }
+        console.log('Data used for search History: ', historyList);
         // * Start at end of history array and count down to show the most recent cities at the top.
-        for (let i = historyList.length - 1; i >= 0; i--) {
-            const historyItem = buildHistoryListItem(JSON.stringify(historyList.cities[i].name));
+        for (let i = historyList.cities.length - 1; i >= 0; i--) {
+            console.log(JSON.stringify(historyList.cities[i].name));
+            const historyItem = buildHistoryListItem(historyList.cities[i]);
             searchHistoryContainer.append(historyItem);
         }
     }
@@ -230,11 +239,12 @@ const handleDeleteHistoryClick = (event) => {
 Initial Render
 
 */
+test();
 
-
-const getAndRenderHistory = () => fetchSearchHistory().then(renderSearchHistory);
+const getAndRenderHistory = () => /*fetchSearchHistory().then(renderSearchHistory());*/ renderSearchHistory(fetchSearchHistory());
 searchForm?.addEventListener('submit', handleSearchFormSubmit);
 searchHistoryContainer?.addEventListener('click', handleSearchHistoryClick);
+
 getAndRenderHistory();
 
-fetchSearchHistory();
+//fetchSearchHistory();

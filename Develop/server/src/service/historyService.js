@@ -8,48 +8,57 @@ import WeatherService from "../service/weatherService.js";
 
 const filePath = path.join(__dirname, "../../db/searchHistory.json");
 
-function generateRandomId() {
-  // Ten digits just felt right...
-  const min = 1000000000;
-  const max = 9999999999;
-  
-  return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
-}
-
 class City {
-  constructor(name, id = generateRandomId()) {
+  generateRandomId() {
+    // Ten digits just felt right...
+    const min = 1000000000;
+    const max = 9999999999;
+
+    return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+  }
+
+  constructor(name, id = this.generateRandomId()) {
     this.name = name;
     this.id = id;
   }
 }
 
 class HistoryService {
-
   async readHistory() {
     try {
       const data = await fs.readFile(filePath, "utf8");
+      console.log(data);
       console.log("request sent for searchHistory object");
       const jsonObject = JSON.parse(data);
-      console.log(jsonObject);
-      return jsonObject;
+      console.log("Cities retrieved: ", jsonObject.cities);
+      return jsonObject || [];
 
       // Return the entire JSON object
     } catch (error) {
       console.error("Error reading or parsing the file:", error);
-      return { cities: [] };
+      return [];
     }
   }
 
   async appendToArray(city) {
     try {
-      const cityToAdd = new City(city);
-      console.log(cityToAdd.name);
+      console.log('City object: ', city);
+      console.log('City name: ', city.name);
+      console.log('City id: ', city.id);
+      console.log('Type of city.name: ', typeof city.name);
+      
       let jsonObject = await this.readHistory();
+      //let jsonObject = data;
       if (!jsonObject.cities) {
         jsonObject.cities = [];
       }
+      //DEBUGGING -> console.log("appendToArray(), line 51: ", jsonObject);
+      
+      //DEBUGGING -> console.log('jsonObject Array before push: ', jsonObject);
+    
+      jsonObject.cities.push({ name: city.name, id: city.id });
 
-      jsonObject.cities.push({ name: cityToAdd.cityName, id: cityToAdd.id});
+      //DEBUGGING -> console.log('Updated jsonObject array: ',jsonObject.cities);
 
       await fs.writeFile(filePath, JSON.stringify(jsonObject, null, 2), "utf8");
       console.log("Writing completed");
@@ -58,8 +67,8 @@ class HistoryService {
     }
   }
 
-  async addToHistory(cityName) {
-    await this.appendToArray(cityName);
+  async addToHistory(historyObj) {
+    await this.appendToArray(historyObj);
   }
 
   async delete(id) {
@@ -69,7 +78,11 @@ class HistoryService {
       const cityIndex = jsonObject.cities.findIndex((city) => city.id === id);
       if (cityIndex !== -1) {
         jsonObject.cities.splice(cityIndex, 1);
-        await fs.writeFile(filePath, JSON.stringify(jsonObject, null, 2), "utf8");
+        await fs.writeFile(
+          filePath,
+          JSON.stringify(jsonObject, null, 2),
+          "utf8"
+        );
         return { success: true, message: `City of ID ${id} removed.` };
       } else {
         return { success: false, message: `City of ID ${id} not found.` };
@@ -82,3 +95,4 @@ class HistoryService {
 }
 
 export default new HistoryService();
+export { City };

@@ -1,7 +1,7 @@
 import { Router } from "express";
 const router = Router();
 
-import HistoryService from "../../service/historyService.js";
+import HistoryService, { City } from "../../service/historyService.js";
 import WeatherService from "../../service/weatherService.js";
 
 // TODO: POST Request with city name to retrieve weather data
@@ -9,17 +9,18 @@ router.post("/", async (req, res) => {
   // TODO: GET weather data from city name (Call the appropriate method(s) from historyService)
   try {
 
-    const city_name = JSON.stringify(req.body);
+    const city_name = JSON.stringify(req.body.cityName);
   
     const weatherData = await WeatherService.getWeatherData(city_name);
-    console.log("router.post('/') ... COMPLETE");
-    console.log(weatherData);
-    const cityToSave = weatherData[0].name;
+    //DEBUGGING -> console.log("@ router.post, city_name = ", city_name);
+    //DEBUGGING -> console.log("router.post('/') ... COMPLETE");
+    //DEBUGGING -> console.log(weatherData);
+    const cityToSave = new City(city_name);
     try {
       HistoryService.addToHistory(cityToSave); 
       console.log("History saved!");
       } catch (err) {
-        console.log("History save failed...");
+      console.log("History save failed...");
       }
     res.json(weatherData);
   } catch (error) {
@@ -34,7 +35,7 @@ router.get("/history/", async (req, res) => {
   // return the data from searchHistory.json in JSON format.
   try {
     const history = await HistoryService.readHistory(); // Call readHistory()
-    console.log(history);
+    //DEBUGGING -> console.log(history);
     res.json(history); // Send the array of city names as JSON;
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch search history." });
